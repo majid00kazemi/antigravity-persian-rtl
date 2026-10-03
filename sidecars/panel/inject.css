@@ -1,5 +1,5 @@
 /*
- * inject.css — Comprehensive Persian Font & RTL Stylesheet
+ * inject.css — Language-aware Persian Font & RTL/LTR Stylesheet
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap');
@@ -10,24 +10,31 @@
                'Helvetica Neue', Arial, sans-serif !important;
 }
 
-/* RTL Elements - Direction & Alignment */
-[dir="rtl"],
-[dir="rtl"] p,
-[dir="rtl"] span,
-[dir="rtl"] div,
-[dir="rtl"] h1,
-[dir="rtl"] h2,
-[dir="rtl"] h3,
-[dir="rtl"] h4,
-[dir="rtl"] h5,
-[dir="rtl"] h6,
-[dir="rtl"] blockquote {
+/* Specific leaf text elements in RTL */
+p[dir="rtl"],
+li[dir="rtl"],
+blockquote[dir="rtl"],
+h1[dir="rtl"], h2[dir="rtl"], h3[dir="rtl"],
+h4[dir="rtl"], h5[dir="rtl"], h6[dir="rtl"],
+dt[dir="rtl"], dd[dir="rtl"] {
   direction: rtl !important;
   text-align: right !important;
   unicode-bidi: isolate !important;
 }
 
-/* Contenteditable and Inputs when RTL */
+/* Specific leaf text elements in LTR */
+p[dir="ltr"],
+li[dir="ltr"],
+blockquote[dir="ltr"],
+h1[dir="ltr"], h2[dir="ltr"], h3[dir="ltr"],
+h4[dir="ltr"], h5[dir="ltr"], h6[dir="ltr"],
+dt[dir="ltr"], dd[dir="ltr"] {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}
+
+/* Inputs and contenteditable when RTL */
 [contenteditable][dir="rtl"],
 textarea[dir="rtl"],
 input[dir="rtl"] {
@@ -36,21 +43,22 @@ input[dir="rtl"] {
   unicode-bidi: plaintext !important;
 }
 
-/* Persian Lists: Bullets / Numbers on the right side */
-[dir="rtl"] ul,
-[dir="rtl"] ol,
+/* Inputs and contenteditable when LTR */
+[contenteditable][dir="ltr"],
+textarea[dir="ltr"],
+input[dir="ltr"] {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: plaintext !important;
+}
+
+/* Persian Lists in RTL: bullets & numbers on the right */
 ul[dir="rtl"],
 ol[dir="rtl"] {
   direction: rtl !important;
   padding-right: 1.75rem !important;
   padding-left: 0 !important;
   margin-right: 0 !important;
-  text-align: right !important;
-}
-
-[dir="rtl"] li,
-li[dir="rtl"] {
-  direction: rtl !important;
   text-align: right !important;
 }
 
@@ -66,12 +74,17 @@ pre *, code *, kbd * {
                'Courier New', monospace !important;
 }
 
-/* Tables in RTL */
-table[dir="rtl"],
-[dir="rtl"] table {
+/* Tables */
+table[dir="rtl"] {
   direction: rtl !important;
 }
-table[dir="rtl"] th, table[dir="rtl"] td,
-[dir="rtl"] table th, [dir="rtl"] table td {
+table[dir="rtl"] th, table[dir="rtl"] td {
   text-align: right !important;
+}
+
+table[dir="ltr"] {
+  direction: ltr !important;
+}
+table[dir="ltr"] th, table[dir="ltr"] td {
+  text-align: left !important;
 }

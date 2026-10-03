@@ -1,9 +1,9 @@
 // Backend for the Persian RTL UI extension.
 //
-// Automatically detects Persian text across the entire Antigravity application,
-// dynamically applying RTL direction, proper alignment, list styles, and Vazirmatn font.
-// Connects via Chrome DevTools Protocol (CDP) to the Electron renderer targets and keeps
-// an active observer running in the page so typing or streaming Persian flips to RTL instantly.
+// Accurately detects text direction using the Unicode Bidirectional Algorithm (UAX #9):
+// - Persian/Arabic paragraphs: direction: rtl, text-align: right
+// - English/Latin paragraphs: direction: ltr, text-align: left
+// - Never applies RTL to outer containers or structural DIVs so English layout remains 100% intact.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { createServer }             from 'node:http';
@@ -23,30 +23,37 @@ function buildCss() {
   return `
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap');
 
-/* Apply Vazirmatn Persian font globally */
+/* Apply Vazirmatn Persian font globally without changing layout direction */
 *, *::before, *::after {
   font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Roboto,
                'Helvetica Neue', Arial, sans-serif !important;
 }
 
-/* RTL Elements - Direction & Alignment */
-[dir="rtl"],
-[dir="rtl"] p,
-[dir="rtl"] span,
-[dir="rtl"] div,
-[dir="rtl"] h1,
-[dir="rtl"] h2,
-[dir="rtl"] h3,
-[dir="rtl"] h4,
-[dir="rtl"] h5,
-[dir="rtl"] h6,
-[dir="rtl"] blockquote {
+/* Specific leaf text elements in RTL */
+p[dir="rtl"],
+li[dir="rtl"],
+blockquote[dir="rtl"],
+h1[dir="rtl"], h2[dir="rtl"], h3[dir="rtl"],
+h4[dir="rtl"], h5[dir="rtl"], h6[dir="rtl"],
+dt[dir="rtl"], dd[dir="rtl"] {
   direction: rtl !important;
   text-align: right !important;
   unicode-bidi: isolate !important;
 }
 
-/* Contenteditable and Inputs when RTL */
+/* Specific leaf text elements in LTR */
+p[dir="ltr"],
+li[dir="ltr"],
+blockquote[dir="ltr"],
+h1[dir="ltr"], h2[dir="ltr"], h3[dir="ltr"],
+h4[dir="ltr"], h5[dir="ltr"], h6[dir="ltr"],
+dt[dir="ltr"], dd[dir="ltr"] {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}
+
+/* Inputs and contenteditable when RTL */
 [contenteditable][dir="rtl"],
 textarea[dir="rtl"],
 input[dir="rtl"] {
@@ -55,21 +62,22 @@ input[dir="rtl"] {
   unicode-bidi: plaintext !important;
 }
 
-/* Persian Lists: Bullets / Numbers on the right side */
-[dir="rtl"] ul,
-[dir="rtl"] ol,
+/* Inputs and contenteditable when LTR */
+[contenteditable][dir="ltr"],
+textarea[dir="ltr"],
+input[dir="ltr"] {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: plaintext !important;
+}
+
+/* Persian Lists in RTL: bullets & numbers on the right */
 ul[dir="rtl"],
 ol[dir="rtl"] {
   direction: rtl !important;
   padding-right: 1.75rem !important;
   padding-left: 0 !important;
   margin-right: 0 !important;
-  text-align: right !important;
-}
-
-[dir="rtl"] li,
-li[dir="rtl"] {
-  direction: rtl !important;
   text-align: right !important;
 }
 
@@ -85,14 +93,19 @@ pre *, code *, kbd * {
                'Courier New', monospace !important;
 }
 
-/* Tables in RTL */
-table[dir="rtl"],
-[dir="rtl"] table {
+/* Tables */
+table[dir="rtl"] {
   direction: rtl !important;
 }
-table[dir="rtl"] th, table[dir="rtl"] td,
-[dir="rtl"] table th, [dir="rtl"] table td {
+table[dir="rtl"] th, table[dir="rtl"] td {
   text-align: right !important;
+}
+
+table[dir="ltr"] {
+  direction: ltr !important;
+}
+table[dir="ltr"] th, table[dir="ltr"] td {
+  text-align: left !important;
 }
 `;
 }
@@ -195,6 +208,7 @@ function cdpEval(wsUrl, expression) {
 // ─── Injection Payload ────────────────────────────────────────────────────────
 
 const JS = `(function() {
+  // 1. Inject or update CSS
   var styleId = '__persian_rtl_styles__';
   var styleEl = document.getElementById(styleId);
   if (!styleEl) {
@@ -204,29 +218,47 @@ const JS = `(function() {
   }
   styleEl.textContent = ${JSON.stringify(buildCss())};
 
-  var FA_REGEX = /[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]/;
-
-  function hasPersian(str) {
-    return typeof str === 'string' && FA_REGEX.test(str);
+  // 2. Clean up any accidental dir attributes on structural wrapper elements
+  var wrongElements = document.querySelectorAll('div[dir="rtl"], span[dir="rtl"], section[dir="rtl"], main[dir="rtl"], nav[dir="rtl"], aside[dir="rtl"]');
+  for (var w = 0; w < wrongElements.length; w++) {
+    var elW = wrongElements[w];
+    if (!elW.isContentEditable) {
+      elW.removeAttribute('dir');
+      elW.style.direction = '';
+      elW.style.textAlign = '';
+    }
   }
 
-  function startsWithPersian(str) {
-    if (typeof str !== 'string') return false;
-    var clean = str.replace(/^[\\s#*\\->0-9.:!?;()\\[\\]{}'"_\\/\\\\@$%^&+=\`~]+/, '');
-    return clean.length > 0 && FA_REGEX.test(clean[0]);
+  // 3. Strict First Strong Character Detection (UAX #9)
+  var RTL_REGEX = /[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]/;
+  var LTR_REGEX = /[A-Za-z\\u00C0-\\u024F\\u0400-\\u04FF]/;
+
+  function getDirection(text) {
+    if (!text || typeof text !== 'string') return null;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (RTL_REGEX.test(ch)) return 'rtl';
+      if (LTR_REGEX.test(ch)) return 'ltr';
+    }
+    return null;
   }
 
-  function processElement(el) {
+  // 4. Process only leaf text elements and inputs
+  function processNode(el) {
     if (!el || el.nodeType !== 1) return;
     var tag = el.tagName;
-    if (tag === 'PRE' || tag === 'CODE' || tag === 'KBD' || tag === 'SCRIPT' || tag === 'STYLE') return;
+
+    // Never alter code, scripts, styles, buttons, icons
+    if (tag === 'PRE' || tag === 'CODE' || tag === 'KBD' || tag === 'SCRIPT' || tag === 'STYLE' || tag === 'BUTTON' || tag === 'SVG') return;
     if (el.closest('pre') || el.closest('code')) return;
 
+    // Editable textareas, inputs, contenteditable
     if (el.isContentEditable || tag === 'TEXTAREA' || tag === 'INPUT') {
       var val = el.innerText || el.value || '';
-      if (startsWithPersian(val) || (val.length > 0 && hasPersian(val))) {
+      var dirVal = getDirection(val);
+      if (dirVal === 'rtl') {
         if (el.getAttribute('dir') !== 'rtl') el.setAttribute('dir', 'rtl');
-      } else if (val.trim().length > 0) {
+      } else if (dirVal === 'ltr') {
         if (el.getAttribute('dir') !== 'ltr') el.setAttribute('dir', 'ltr');
       } else {
         if (el.getAttribute('dir') !== 'auto') el.setAttribute('dir', 'auto');
@@ -234,10 +266,16 @@ const JS = `(function() {
       return;
     }
 
-    var text = el.innerText || el.textContent || '';
-    if (hasPersian(text)) {
-      if (startsWithPersian(text) || (text.length > 3 && hasPersian(text))) {
+    // ONLY leaf-level block text elements:
+    if (tag === 'P' || tag === 'LI' || tag === 'BLOCKQUOTE' || tag === 'H1' || tag === 'H2' || tag === 'H3' || tag === 'H4' || tag === 'H5' || tag === 'H6' || tag === 'DT' || tag === 'DD') {
+      var text = el.innerText || el.textContent || '';
+      var dir = getDirection(text);
+      if (dir === 'rtl') {
         if (el.getAttribute('dir') !== 'rtl') el.setAttribute('dir', 'rtl');
+      } else if (dir === 'ltr') {
+        if (el.getAttribute('dir') !== 'ltr') el.setAttribute('dir', 'ltr');
+      } else {
+        el.removeAttribute('dir');
       }
     }
   }
@@ -245,9 +283,9 @@ const JS = `(function() {
   function scanAll(root) {
     var container = root || document;
     var editables = container.querySelectorAll('textarea, input, [contenteditable]');
-    for (var i = 0; i < editables.length; i++) processElement(editables[i]);
-    var blocks = container.querySelectorAll('p, li, blockquote, h1, h2, h3, h4, h5, h6, [class*="markdown"], [class*="message"], [class*="bubble"], [class*="turn"], [class*="content"]');
-    for (var j = 0; j < blocks.length; j++) processElement(blocks[j]);
+    for (var i = 0; i < editables.length; i++) processNode(editables[i]);
+    var textNodes = container.querySelectorAll('p, li, blockquote, h1, h2, h3, h4, h5, h6, dt, dd');
+    for (var j = 0; j < textNodes.length; j++) processNode(textNodes[j]);
   }
 
   scanAll(document);
@@ -256,12 +294,12 @@ const JS = `(function() {
     window.__persian_rtl_active__ = true;
 
     document.addEventListener('input', function(e) {
-      if (e.target) processElement(e.target);
+      if (e.target) processNode(e.target);
     }, true);
 
     document.addEventListener('keyup', function(e) {
       if (e.target && (e.target.isContentEditable || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) {
-        processElement(e.target);
+        processNode(e.target);
       }
     }, true);
 
@@ -272,14 +310,14 @@ const JS = `(function() {
           for (var a = 0; a < mut.addedNodes.length; a++) {
             var n = mut.addedNodes[a];
             if (n.nodeType === 1) {
-              processElement(n);
+              processNode(n);
               var children = n.querySelectorAll ? n.querySelectorAll('p, li, blockquote, h1, h2, h3, h4, h5, h6, textarea, input, [contenteditable]') : [];
-              for (var c = 0; c < children.length; c++) processElement(children[c]);
+              for (var c = 0; c < children.length; c++) processNode(children[c]);
             }
           }
         }
         if (mut.type === 'characterData' && mut.target && mut.target.parentElement) {
-          processElement(mut.target.parentElement);
+          processNode(mut.target.parentElement);
         }
       }
     });
