@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rounded square background in green (Persian flag color) -->
+  <rect width="64" height="64" rx="14" ry="14" fill="#2d6a4f"/>
+  <!-- "ف" Persian letter Fa, symbolizing Farsi -->
+  <text x="32" y="46" text-anchor="middle" font-family="serif" font-size="36" fill="#ffffff" font-weight="bold">ف</text>
+</svg>

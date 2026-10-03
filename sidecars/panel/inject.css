@@ -1,0 +1,77 @@
+/*
+ * inject.css — Comprehensive Persian Font & RTL Stylesheet
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap');
+
+/* Apply Vazirmatn Persian font globally */
+*, *::before, *::after {
+  font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, sans-serif !important;
+}
+
+/* RTL Elements - Direction & Alignment */
+[dir="rtl"],
+[dir="rtl"] p,
+[dir="rtl"] span,
+[dir="rtl"] div,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6,
+[dir="rtl"] blockquote {
+  direction: rtl !important;
+  text-align: right !important;
+  unicode-bidi: isolate !important;
+}
+
+/* Contenteditable and Inputs when RTL */
+[contenteditable][dir="rtl"],
+textarea[dir="rtl"],
+input[dir="rtl"] {
+  direction: rtl !important;
+  text-align: right !important;
+  unicode-bidi: plaintext !important;
+}
+
+/* Persian Lists: Bullets / Numbers on the right side */
+[dir="rtl"] ul,
+[dir="rtl"] ol,
+ul[dir="rtl"],
+ol[dir="rtl"] {
+  direction: rtl !important;
+  padding-right: 1.75rem !important;
+  padding-left: 0 !important;
+  margin-right: 0 !important;
+  text-align: right !important;
+}
+
+[dir="rtl"] li,
+li[dir="rtl"] {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+/* Code blocks, numbers, monospaced text ALWAYS STAY LTR */
+pre, code, kbd, samp,
+[class*="code" i],
+[class*="terminal" i],
+pre *, code *, kbd * {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas,
+               'Courier New', monospace !important;
+}
+
+/* Tables in RTL */
+table[dir="rtl"],
+[dir="rtl"] table {
+  direction: rtl !important;
+}
+table[dir="rtl"] th, table[dir="rtl"] td,
+[dir="rtl"] table th, [dir="rtl"] table td {
+  text-align: right !important;
+}

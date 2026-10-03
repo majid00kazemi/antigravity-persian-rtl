@@ -1,0 +1,6 @@
+# Node / Sidecar data
+node_modules/
+.data/
+*.log
+.DS_Store
+Thumbs.db

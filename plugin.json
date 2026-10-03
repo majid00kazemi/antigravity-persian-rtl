@@ -1,0 +1,5 @@
+{
+  "name": "persian-rtl",
+  "description": "Adds Persian (Farsi) font support and RTL text direction to the Antigravity app. Injects Vazirmatn font and RTL-aware CSS into the host window so Persian text renders correctly throughout the interface.",
+  "logo": "assets/logo.svg"
+}

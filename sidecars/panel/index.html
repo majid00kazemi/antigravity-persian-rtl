@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Persian RTL</title>
+  <link rel="stylesheet" href="/styles.css">
+  <!-- Bridge to Antigravity: applies the host theme and defines window.sidecar. -->
+  <script src="/preload.js"></script>
+</head>
+<body>
+  <main class="panel" dir="rtl">
+
+    <header class="panel-header">
+      <h1>فارسی / Persian RTL</h1>
+      <p class="muted">این افزونه فونت وزیرمتن و راست‌چین را در سرتاسر برنامه Antigravity فعال می‌کند.</p>
+    </header>
+
+    <!-- Injection status card -->
+    <section class="card" aria-labelledby="inject-title">
+      <div class="card-header">
+        <h2 id="inject-title">وضعیت تزریق</h2>
+        <span id="inject-badge" class="badge">در حال اتصال…</span>
+      </div>
+      <p class="muted small" id="inject-info">
+        فونت وزیرمتن و RTL به‌طور خودکار از لحظه فعال‌سازی پلاگین در سرتاسر برنامه اعمال می‌شوند — نیازی به باز کردن این پنل نیست.
+      </p>
+      <div class="actions">
+        <button id="btn-reinject" type="button">اعمال مجدد</button>
+      </div>
+    </section>
+
+    <!-- Live RTL text preview -->
+    <section class="card" aria-labelledby="preview-title">
+      <div class="card-header">
+        <h2 id="preview-title">پیش‌نمایش متن فارسی</h2>
+      </div>
+      <p class="muted small">بنویسید تا نحوه نمایش متن فارسی را ببینید:</p>
+      <textarea
+        id="preview-text"
+        rows="5"
+        dir="auto"
+        placeholder="متن فارسی یا انگلیسی بنویسید… (جهت به‌طور خودکار تشخیص داده می‌شود)"
+      ></textarea>
+      <div id="preview-output" class="preview-box" dir="auto" aria-live="polite">
+        سلام! این یک متن نمونه فارسی است. Hello! This is mixed English text.
+      </div>
+    </section>
+
+    <!-- What was injected -->
+    <section class="card" aria-labelledby="info-title">
+      <div class="card-header">
+        <h2 id="info-title">چه تغییراتی اعمال شد؟</h2>
+      </div>
+      <ul class="info-list" dir="rtl">
+        <li>🔤 <strong>فونت وزیرمتن</strong> — بهترین فونت متن‌باز برای فارسی و عربی، از Google Fonts بارگذاری می‌شود.</li>
+        <li>↔️ <strong>تشخیص خودکار جهت</strong> — ناحیه‌های ورود متن (textarea، input) با <code>unicode-bidi: plaintext</code> جهت هر پاراگراف را جداگانه تشخیص می‌دهند.</li>
+        <li>💬 <strong>پیام‌های چت</strong> — بلاک‌های پیام راست‌چین می‌شوند اگر با فارسی شروع شوند.</li>
+        <li>💻 <strong>کدبلاک‌ها</strong> — همیشه چپ‌چین باقی می‌مانند (زبان‌های برنامه‌نویسی همیشه LTR هستند).</li>
+      </ul>
+    </section>
+
+    <p id="toast" class="toast" role="status" aria-live="polite" hidden></p>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
