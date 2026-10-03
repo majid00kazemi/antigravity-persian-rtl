@@ -1,7 +1,7 @@
 # Antigravity Persian RTL Installer (Windows PowerShell)
 $ErrorActionPreference = "Stop"
 
-$repoUrl = "https://github.com/majidkarimi/antigravity-persian-rtl.git"
+$repoUrl = "https://github.com/majid00kazemi/antigravity-persian-rtl.git"
 $targetDir = "$env:USERPROFILE\.gemini\config\plugins\persian-rtl"
 
 Write-Host "Installing Antigravity Persian RTL Plugin..." -ForegroundColor Cyan

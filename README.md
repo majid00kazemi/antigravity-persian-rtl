@@ -24,14 +24,14 @@ Users can install this plugin with a single command in their terminal:
 کافیست دستور زیر را در PowerShell اجرا کنید:
 
 ```powershell
-git clone https://github.com/majidkarimi/antigravity-persian-rtl.git "$env:USERPROFILE\.gemini\config\plugins\persian-rtl"
+git clone https://github.com/majid00kazemi/antigravity-persian-rtl.git "$env:USERPROFILE\.gemini\config\plugins\persian-rtl"
 ```
 
 ### macOS / Linux (Terminal)
 در ترمینال سیستم‌عامل مک یا لینوکس:
 
 ```bash
-git clone https://github.com/majidkarimi/antigravity-persian-rtl.git "$HOME/.gemini/config/plugins/persian-rtl"
+git clone https://github.com/majid00kazemi/antigravity-persian-rtl.git "$HOME/.gemini/config/plugins/persian-rtl"
 ```
 
 ---

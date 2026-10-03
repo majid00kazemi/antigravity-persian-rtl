@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-REPO_URL="https://github.com/majidkarimi/antigravity-persian-rtl.git"
+REPO_URL="https://github.com/majid00kazemi/antigravity-persian-rtl.git"
 TARGET_DIR="$HOME/.gemini/config/plugins/persian-rtl"
 
 echo "Installing Antigravity Persian RTL Plugin..."
